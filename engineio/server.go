@@ -51,6 +51,11 @@ func (s *Server) Close() error {
 	return nil
 }
 
+// RemoveSession removes session
+func (s *Server) RemoveSession(sid string) {
+	s.sessions.Remove(sid)
+}
+
 // Accept accepts a connection.
 func (s *Server) Accept() (Conn, error) {
 	c := <-s.connChan
