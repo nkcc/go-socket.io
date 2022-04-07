@@ -24,6 +24,7 @@ type Session struct {
 	conn      transport.Conn
 	params    transport.ConnParameters
 	transport string
+	deadline  time.Time
 
 	context interface{}
 
@@ -236,6 +237,7 @@ func (s *Session) setDeadline() error {
 	defer s.upgradeLocker.RUnlock()
 
 	deadline := time.Now().Add(s.params.PingTimeout)
+	s.deadline = deadline
 
 	err := s.conn.SetReadDeadline(deadline)
 	if err != nil {
@@ -344,4 +346,11 @@ func (s *Session) upgrading(t string, conn transport.Conn) {
 	p = nil
 
 	old.Close()
+}
+
+func (s *Session) IsExpired() bool {
+	s.upgradeLocker.RLock()
+	defer s.upgradeLocker.RUnlock()
+
+	return time.Now().After(s.deadline)
 }

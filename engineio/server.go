@@ -32,7 +32,7 @@ type Server struct {
 
 // NewServer returns a server.
 func NewServer(opts *Options) *Server {
-	return &Server{
+	s := &Server{
 		transports:     transport.NewManager(opts.getTransport()),
 		pingInterval:   opts.getPingInterval(),
 		pingTimeout:    opts.getPingTimeout(),
@@ -40,6 +40,26 @@ func NewServer(opts *Options) *Server {
 		connInitor:     opts.getConnInitor(),
 		sessions:       session.NewManager(opts.getSessionIDGenerator()),
 		connChan:       make(chan Conn, 1),
+	}
+
+	if opts.RunClear == true {
+		go s.Cleaner()
+	}
+	return s
+}
+
+// Cleaner Clean up expired sessions regularly.
+func (s *Server) Cleaner() {
+	ticker := time.NewTicker(3 * time.Second)
+	//fmt.Println("当前时间为:", time.Now())
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			//fmt.Println("当前时间为:", t)
+			s.sessions.Clean()
+		}
 	}
 }
 

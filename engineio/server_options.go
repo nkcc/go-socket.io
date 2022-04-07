@@ -20,6 +20,7 @@ type Options struct {
 
 	RequestChecker CheckerFunc
 	ConnInitor     ConnInitorFunc
+	RunClear bool
 }
 
 func (c *Options) getRequestChecker() CheckerFunc {

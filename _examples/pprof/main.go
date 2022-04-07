@@ -27,13 +27,16 @@ func main() {
 				CheckOrigin: allowOriginFunc,
 			},
 		},
+		RunClear: true,
 	}
 
 	server := socketio.NewServer(opts)
 
 	server.OnConnect("/", func(s socketio.Conn) error {
 		s.SetContext("")
-		log.Println("connected:", s.ID())
+		//log.Println(")
+		//log.Println("connected:" + s.ID() +  "current connections:", server.Count())
+		log.Println("current connections:", server.Count())
 		return nil
 	})
 
@@ -59,6 +62,14 @@ func main() {
 	})
 
 	server.OnDisconnect("/", func(s socketio.Conn, reason string) {
+		//id := s.ID()
+		defer func() {
+			//log.Println("disconnected:", id)
+			//server.RemoveSession(id)
+			log.Println("current connections:", server.Count())
+		}()
+
+		s.Close()
 		log.Println("closed", reason)
 	})
 
@@ -73,10 +84,11 @@ func main() {
 	go func() {
 		log.Println("Serving debug at :8001...")
 
-		if err := http.ListenAndServe(":8001", debugMux); err != nil {
+		if err := http.ListenAndServe(":8001", nil); err != nil {
 			log.Fatalf("debug serve error: %s\n", err)
 		}
 	}()
+
 
 	go func() {
 		log.Println("Serving socketio...")

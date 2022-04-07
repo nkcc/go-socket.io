@@ -1,6 +1,7 @@
 package session
 
 import (
+	"log"
 	"sync"
 )
 
@@ -39,10 +40,21 @@ func (m *Manager) Remove(sid string) {
 	m.locker.Lock()
 	defer m.locker.Unlock()
 
+	log.Println(sid)
 	if _, ok := m.sessions[sid]; !ok {
 		return
 	}
 	delete(m.sessions, sid)
+}
+
+func (m *Manager) Clean() {
+	log.Println("current sessions:", len(m.sessions))
+	for sid, s := range m.sessions {
+		if s.IsExpired() {
+			log.Println("清理过期session", sid)
+			m.Remove(sid)
+		}
+	}
 }
 
 func (m *Manager) Count() int {
